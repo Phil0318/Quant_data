@@ -1,0 +1,39 @@
+name: option-snapshot
+
+on:
+  schedule:
+    # UTC 22:00 = 美东收盘后 (冬令时 17:00 / 夏令时 18:00), 周一至周五
+    - cron: "0 22 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run snapshot
+        run: python option_snapshot.py
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/options_snapshots.csv
+          if git diff --cached --quiet; then
+            echo "无数据变化，跳过提交"
+          else
+            git commit -m "chore: option snapshot $(date -u +%Y-%m-%d)"
+            git push
+          fi

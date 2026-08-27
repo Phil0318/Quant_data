@@ -1,0 +1,4 @@
+__pycache__/
+*.pyc
+factor_crawl.log
+.DS_Store
