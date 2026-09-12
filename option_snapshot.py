@@ -5,17 +5,16 @@ import datetime as dt
 import pandas as pd
 import yfinance as yf
 
-TICKERS = ["MSFT", "GOOG"]
+TICKERS = ["MSFT", "GOOG", "META", "AVGO", "AMZN", "MU"]
 MAX_EXPIRIES = 10
 OUT = "data/options_snapshots.csv"
 
 
-def snapshot(ticker, max_expiries=MAX_EXPIRIES):
+def snapshot(ticker, now, max_expiries=MAX_EXPIRIES):
     t = yf.Ticker(ticker)
     exps = list(t.options)[:max_expiries]
     hist = t.history(period="1d", auto_adjust=True)
     underlying = float(hist["Close"].iloc[-1])
-    now = dt.datetime.utcnow().isoformat(timespec="seconds") + "Z"
 
     rows = []
     for exp in exps:
@@ -44,10 +43,11 @@ def snapshot(ticker, max_expiries=MAX_EXPIRIES):
 
 
 def main():
+    now = dt.datetime.utcnow().isoformat(timespec="seconds") + "Z"
     frames = []
     for t in TICKERS:
         try:
-            df = snapshot(t)
+            df = snapshot(t, now)
             frames.append(df)
             print(f"{t}: {len(df)} 行", flush=True)
         except Exception as e:
