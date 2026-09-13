@@ -7,7 +7,11 @@ import yfinance as yf
 
 TICKERS = ["MSFT", "GOOG", "META", "AVGO", "AMZN", "MU"]
 MAX_EXPIRIES = 10
-OUT = "data/options_snapshots.csv"
+OUT_DIR = "data"
+
+
+def month_path(now):
+    return os.path.join(OUT_DIR, f"options_{now[:7]}.csv")
 
 
 def snapshot(ticker, now, max_expiries=MAX_EXPIRIES):
@@ -58,10 +62,11 @@ def main():
         sys.exit(1)
 
     out = pd.concat(frames, ignore_index=True)
-    os.makedirs("data", exist_ok=True)
-    header = not os.path.exists(OUT)
-    out.to_csv(OUT, mode="a", header=header, index=False)
-    print(f"已追加 {len(out)} 行到 {OUT}", flush=True)
+    os.makedirs(OUT_DIR, exist_ok=True)
+    out_path = month_path(now)
+    header = not os.path.exists(out_path)
+    out.to_csv(out_path, mode="a", header=header, index=False)
+    print(f"已追加 {len(out)} 行到 {out_path}", flush=True)
 
 
 if __name__ == "__main__":
